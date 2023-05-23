@@ -10,10 +10,10 @@ spring:
       #基本属性
       url: jdbc:mysql://127.0.0.1:3306/lu_tale?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false
       username: root
-      password: jiangxufeng12138
+      password: xxx
       stat-view-servlet: # 设置druid后台监控的账号密码
         login-username: root
-        login-password: jiangxufeng12138
+        login-password: xxx
 
       #配置初始化大小/最小/最大
       initial-size: 1
