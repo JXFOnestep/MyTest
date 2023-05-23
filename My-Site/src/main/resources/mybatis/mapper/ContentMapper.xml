@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mysite.dao.ContentDao">
+
+    <select id="findAll" resultType="Content">
+        select * from t_contents;
+    </select>
+
+<!--
+    利用PageHelper分页时SQL语句末尾不能加分号
+-->
+    <select id="getArticlesByCond" resultType="Content"
+            parameterType="com.example.mysite.dto.condition.ContentCond">
+        SELECT * FROM t_contents AS c
+        <where>
+            <if test="tag != null">
+                AND c.tags LIKE CONCAT('%',#{tag, jdbcType=VARCHAR},'%')
+            </if>
+            <if test="category != null">
+                AND c.categories LIKE CONCAT('%',#{category, jdbcType=VARCHAR},'%')
+            </if>
+            <if test="status != null">
+                AND c.status = #{status, jdbcType=VARCHAR}
+            </if>
+            <if test="title != null">
+                AND c.title LIKE CONCAT('%',#{title, jdbcType=VARCHAR},'%')
+            </if>
+            <if test="content != null">
+                AND c.content LIKE CONCAT('%',#{content, jdbcType=VARCHAR},'%')
+            </if>
+            <if test="type != null">
+                AND c.type = #{type, jdbcType=VARCHAR}
+            </if>
+            <if test="startTime != null">
+                AND c.created &gt;= #{startTime, jdbcType=INTEGER}
+            </if>
+            <if test="endTime != null">
+                AND c.created &lt;= #{endTime, jdbcType=INTEGER}
+            </if>
+        </where>
+        ORDER BY c.created DESC
+    </select>
+
+    <select id="getArticleById" resultType="Content">
+        select * from t_contents where  cid = #{cid}
+    </select>
+
+
+    <select id="getArticleCounts" resultType="java.lang.Long">
+        select count(*) from t_contents
+    </select>
+
+
+    <resultMap id="archiveDtoMap" type="com.example.mysite.dto.ArchiveDto">
+        <id column="date" property="date"/>
+        <result column="count" property="count"/>
+    </resultMap>
+    <!--    List<ArchiveDto> getArchive(ContentCond contentCond);-->
+    <select id="getArchive" resultMap="archiveDtoMap"
+            parameterType="com.example.mysite.dto.condition.ContentCond">
+        select
+        FROM_UNIXTIME(created, '%Y年%m月') as date, <!-- from_unixtime(timestamp ,date_format)将时间戳转成指定格式 -->
+        count(*)                         as count
+        from t_contents
+        <where>
+            type = 'post'
+            and status = 'publish'
+            <if test="startTime != null">
+                AND created &gt;= #{startTime, jdbcType=INTEGER}
+            </if>
+            <if test="endTime != null">
+                AND created &lt;= #{endTime, jdbcType=INTEGER}
+            </if>
+        </where>
+        group by date
+        order by date desc
+    </select>
+
+    <insert id="addArticle" parameterType="Content"
+            useGeneratedKeys="true" keyProperty="cid">
+        INSERT INTO t_contents
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            title, titlePic, slug, created, content, authorId,
+            type, status, tags, categories, hits, commentsNum, allowComment,
+            allowPing, allowFeed,
+        </trim>
+        <trim prefix="VALUES(" suffix=")" suffixOverrides=",">
+            #{title, jdbcType=VARCHAR}, #{titlePic, jdbcType=VARCHAR}, #{slug, jdbcType=VARCHAR}, UNIX_TIMESTAMP(NOW()),
+            #{content, jdbcType=LONGVARCHAR}, #{authorId, jdbcType=INTEGER},
+            #{type, jdbcType=VARCHAR}, #{status, jdbcType=VARCHAR}, #{tags, jdbcType=VARCHAR},
+            #{categories, jdbcType=VARCHAR}, #{hits, jdbcType=INTEGER}, #{commentsNum, jdbcType=INTEGER},
+            #{allowComment, jdbcType=INTEGER}, #{allowPing, jdbcType=INTEGER}, #{allowFeed, jdbcType=INTEGER},
+        </trim>
+    </insert>
+
+<!--    int updateArticleById(Content content);-->
+    <update id="updateArticleById" parameterType="Content">
+        UPDATE
+        t_contents
+        <set>
+            <if test="title != null">
+                title = #{title, jdbcType=VARCHAR},
+            </if>
+            <if test="titlePic != null">
+                titlePic = #{titlePic, jdbcType=VARCHAR},
+            </if>
+            <if test="slug != null">
+                slug = #{slug, jdbcType=VARCHAR},
+            </if>
+            <if test="content != null">
+                content = #{content, jdbcType=LONGVARCHAR},
+            </if>
+            modified = UNIX_TIMESTAMP(NOW()),
+            <if test="type != null">
+                type = #{type, jdbcType=VARCHAR},
+            </if>
+            <if test="status != null">
+                status = #{status, jdbcType=VARCHAR},
+            </if>
+            <if test="tags != null">
+                tags = #{tags, jdbcType=VARCHAR},
+            </if>
+            <if test="categories != null">
+                categories = #{categories, jdbcType=VARCHAR},
+            </if>
+            <if test="hits != null">
+                hits = #{hits, jdbcType=INTEGER},
+            </if>
+            <if test="commentsNum != null">
+                commentsNum = #{commentsNum, jdbcType=INTEGER},
+            </if>
+            <if test="allowComment != null">
+                allowComment = #{allowComment, jdbcType=INTEGER},
+            </if>
+            <if test="allowPing != null">
+                allowPing = #{allowPing, jdbcType=INTEGER},
+            </if>
+            <if test="allowFeed != null">
+                allowFeed = #{allowFeed, jdbcType=INTEGER},
+            </if>
+        </set>
+        WHERE cid = #{cid, jdbcType=INTEGER}
+    </update>
+
+
+<!--    int deleteArticleById(@Param("cid") int cid);-->
+    <delete id="deleteArticleById" >
+        delete from t_contents where cid=#{cid}
+    </delete>
+    <select id="getArticleListByMid" resultType="com.example.mysite.dto.ContentSearchDto">
+        select a.cid,a.title,a.tags,a.categories from t_contents as a left join t_relationships as b on a.cid=b.cid where b.mid=#{mid}
+    </select>
+
+</mapper>

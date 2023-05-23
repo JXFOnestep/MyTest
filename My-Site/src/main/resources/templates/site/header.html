@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:fragment="header">
+<header role="header">
+    <div class="container">
+
+        <!-- logo -->
+        <h1>
+            <a th:href="@{/}" title="n INITIATIVE">
+                <img src="/icon/site_icon.png" style="width: 66px;" title="n INITIATIVE" alt="n INITIATIVE"/>
+            </a>
+        </h1>
+        <!-- logo -->
+
+        <!-- nav -->
+
+        <nav role="header-nav" class="navy">
+            <ul>
+                <li th:class="${active == 'work' ? 'nav-active':''}"><a th:href="@{/}" title="Work">首页</a></li>
+                <li th:class="${active == 'about' ? 'nav-active':''}"><a th:href="@{/about}" title="About">关于</a>
+                </li>
+                <li th:class="${active == 'blog' ? 'nav-active':''}"><a th:href="@{/blog/index}" title="Blog">博客</a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- nav -->
+
+    </div>
+</header>
+</html>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mysite.dao.CommentDao">
+
+    <select id="findAll" resultType="Comment">
+        select *
+        from t_comments;
+    </select>
+
+    <select id="getCommentsByCond" parameterType="com.example.mysite.dto.condition.CommentCond"
+            resultType="Comment">
+        SELECT * FROM t_comments AS c
+        <where>
+            <if test="status != null and status != '' ">
+                AND c.status=#{status,jdbcType=VARCHAR}
+            </if>
+            <if test="startTime!=0"> <!-- 这里这里的类型，如果startTimes是Integer类型，可以使用null，int就只能使用0 -->
+                AND c.created >= #{startTime, jdbcType=INTEGER}
+            </if>
+            <if test="endTime!=0">
+                <!-- <=可能无法使用，需要转义 -->
+                <![CDATA[ AND c.created <= #{endTime, jdbcType=INTEGER}]]>
+            </if>
+            <if test="parent != 0">
+                AND c.parent = #{parent, jdbcType=INTEGER}
+            </if>
+        </where>
+        ORDER BY c.created
+    </select>
+
+
+    <select id="getCommentById" resultType="Comment">
+        select *
+        from t_comments
+        where coid = #{coid};
+    </select>
+
+    <!--    List<Comment> getCommentsByArticleId(int cid);-->
+    <select id="getCommentsByArticleId" resultType="Comment">
+        select *
+        from t_comments
+        where cid = #{cid}
+          and status = 'approved'
+    </select>
+
+
+    <select id="getCommentsCount" resultType="java.lang.Long">
+        select count(*)
+        from t_comments;
+    </select>
+    <!--    int addComment(Comment comment);-->
+    <insert id="addComment" parameterType="Comment">
+        INSERT INTO t_comments
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            cid, created, author, authorId, ownerId, mail,
+            url, ip, agent, type, status, parent, content,
+        </trim>
+        <trim prefix="VALUES(" suffix=")" suffixOverrides=",">
+            #{cid,jdbcType=INTEGER}, #{created, jdbcType=INTEGER},
+            #{author, jdbcType=VARCHAR}, #{authorId, jdbcType=INTEGER}, #{ownerId, jdbcType=INTEGER},
+            #{mail, jdbcType=VARCHAR}, #{url, jdbcType=VARCHAR}, #{ip, jdbcType=VARCHAR}, #{agent, jdbcType=VARCHAR},
+            #{type, jdbcType=VARCHAR}, #{status, jdbcType=VARCHAR}, #{parent, jdbcType=INTEGER},
+            #{content, jdbcType=LONGVARCHAR},
+        </trim>
+    </insert>
+
+    <!--    int deleteComment(@Param("coid") int coid);-->
+    <delete id="deleteComment">
+        delete from t_comments where coid=#{coid};
+
+
+    </delete>
+
+
+    <!--    int updateComment(@Param("coid") int coid, @Param("status") String status);-->
+    <update id="updateComment">
+        update t_comments
+        set status=#{status}
+        where coid = #{coid}
+    </update>
+
+</mapper>

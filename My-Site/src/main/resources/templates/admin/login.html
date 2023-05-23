@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en"  xmlns:th="http://www.thymeleaf.org" >
+<head>
+    <meta charset="UTF-8">
+    <title>登陆</title>
+    <link rel="stylesheet" href="/bootstrap-4.6.2-dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10.15.5/dist/sweetalert2.min.css">
+    <style>
+
+        .login-form {
+            max-width: 320px;
+            margin: 140px auto;
+            padding: 15px;
+            border: 1px solid #e7e7e7;
+            background: #fff;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            font-weight: normal;
+        }
+        input.form-control {
+            height: auto;
+            box-shadow: none;
+            border-color: #e7e7e7;
+        }
+        input[type="text"].form-control:focus,
+        input[type="password"].form-control:focus {
+            border-color: #2b68a9;
+            box-shadow: none;
+        }
+        .btn {
+            font-size: 14px;
+            display: block;
+            width: 100%;
+            height: 38px;
+            line-height: 38px;
+            padding: 0;
+            border-radius: 3px;
+            border: none;
+            background: #2b68a9;
+            cursor: pointer;
+        }
+        .btn:hover,
+        .btn:focus {
+            background: #2b68a9;
+            outline: none;
+        }
+    </style>
+</head>
+<body th:style="'background:url(/admin/images/bg/6.jpg);no-repeat; background-size: cover;'" >
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <div class="login-form">
+                <h3 class="text-center mb-4">登录</h3>
+                <form method="post" id="loginForm" onsubmit="return checkForm()">
+                    <div class="form-group">
+                        <label>账号</label>
+                        <input type="text" name="username" class="form-control" placeholder="请输入账号">
+                    </div>
+                    <div class="form-group">
+                        <label>密码</label>
+                        <input type="password" name="password" class="form-control" placeholder="请输入密码">
+                    </div>
+                    <div class="form-group form-check">
+                        <input type="checkbox" class="form-check-input" id="exampleCheck1" name="rememberMe">
+                        <label class="form-check-label" for="exampleCheck1">记住我</label>
+                    </div>
+                    <button type="submit" class="btn btn-block">登录</button>
+                </form>
+                <div id="alertBox"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="/jquery/jquery-3.6.4.min.js"></script>
+<script src="https://cdn.staticfile.org/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="/bootstrap-4.6.2-dist/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.15.5/dist/sweetalert2.all.min.js"></script>
+<script src="/admin/js/jquery.app.js"></script>
+<script src="/admin/js/base.js"></script>
+<script type="text/javascript">
+    var tale = new $.tale();
+    function checkForm() {
+        tale.post({
+            url: '/admin/login',
+            data: $("#loginForm").serialize(),
+            success: function (result) {
+                if (result && result.code == 'success') {
+                    window.location.href = '/admin/index';
+                } else {
+                    console.log(result.msg);
+                    // tale.alertError(result.msg || '登录失败');
+                    // AJAX 请求失败
+                    Swal.fire({
+                        icon: 'error',
+                        title: '登陆失败',
+                        text: result.msg,
+                        timer: 3000, // 3秒后自动关闭
+                        timerProgressBar: true, // 进度条样式
+                        onClose: () => {
+                            console.log('警告框已自动关闭') // 可以在这里添加关闭时执行的操作
+                        }});
+                }
+            }
+        });
+        return false;
+    }
+</script>
+
+</body>
+</html>
+

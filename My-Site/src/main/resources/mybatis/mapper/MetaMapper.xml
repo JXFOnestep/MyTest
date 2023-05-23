@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mysite.dao.MetaDao">
+
+    <select id="findAll" resultType="Meta">
+        select * from t_metas;
+    </select>
+
+    <resultMap id="BaseResultMap" type="Meta">
+        <id column="mid" jdbcType="INTEGER" property="mid" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="slug" jdbcType="VARCHAR" property="slug" />
+        <result column="type" jdbcType="VARCHAR" property="type" />
+        <result column="description" jdbcType="VARCHAR" property="description" />
+        <result column="sort" jdbcType="INTEGER" property="sort" />
+        <result column="parent" jdbcType="INTEGER" property="parent" />
+    </resultMap>
+
+    <resultMap id="MetaDto" type="com.example.mysite.dto.MetaDto" extends="BaseResultMap">
+        <result column="count" property="count" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--     List<MetaDto> selectFromSql(Map<String, Object> paraMap);  -->
+    <select id="selectFromSql" resultMap="MetaDto" parameterType="Map">
+        select a.*, count(b.cid) as 'count' from t_metas AS a left join t_relationships AS b on a.mid = b.mid
+            where a.type = #{type} group by a.mid order by #{order} limit #{limit}
+    </select>
+
+    <select id="getMetasCountByType" resultType="java.lang.Long">
+        select count(*) from t_metas where type=#{type}
+    </select>
+
+<!--    List<Meta> getMetasByCond(MetaCond metaCond);-->
+    <select id="getMetasByCond" parameterType="com.example.mysite.dto.condition.MetaCond"
+            resultType="Meta">
+        select * from t_metas
+        <where>
+            <if test="type != null and type != '' ">
+                and type=#{type}
+            </if>
+            <if test="name != null and name != '' ">
+                and name=#{name}
+            </if>
+        </where> order by sort;
+    </select>
+
+<!--    int addMeta(Meta meta);-->
+    <insert id="addMeta" parameterType="Meta">
+        INSERT INTO t_metas
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            name, slug, type, description, sort, parent
+        </trim>
+        <trim prefix="VALUES(" suffix=")" suffixOverrides=",">
+            #{name, jdbcType=VARCHAR}, #{slug, jdbcType=VARCHAR}, #{type, jdbcType=VARCHAR},
+            #{description, jdbcType=VARCHAR}, #{sort, jdbcType=INTEGER}, #{parent, jdbcType=INTEGER}
+        </trim>
+    </insert>
+
+    <select id="getMetaById" resultType="Meta">
+        select * from t_metas where mid=#{mid}
+    </select>
+
+
+    <delete id="deleteMetaById">
+        delete from t_metas where mid=#{mid}
+    </delete>
+    <update id="updateMeta" parameterType="Meta">
+        update t_metas
+        <set>
+            <if test="name != null">
+                name = #{name, jdbcType=VARCHAR},
+            </if>
+            <if test="slug != null">
+                slug = #{slug, jdbcType=VARCHAR},
+            </if>
+            <if test="type != null">
+                type = #{type, jdbcType=VARCHAR},
+            </if>
+            <if test="description != null">
+                description = #{description, jdbcType=VARCHAR},
+            </if>
+            <if test="sort != null">
+                sort = #{sort, jdbcType=INTEGER},
+            </if>
+            <if test="parent != null">
+                parent = #{parent, jdbcType=INTEGER},
+            </if>
+        </set>
+        WHERE mid = #{mid, jdbcType=INTEGER}
+    </update>
+
+
+</mapper>
